@@ -17,6 +17,7 @@ import (
 	"github.com/netbirdio/netbird/client/internal/auth"
 	"github.com/netbirdio/netbird/client/proto"
 	"github.com/netbirdio/netbird/client/system"
+	"github.com/netbirdio/netbird/iface"
 	"github.com/netbirdio/netbird/util"
 )
 
@@ -56,6 +57,10 @@ var loginCmd = &cobra.Command{
 				ic.PreSharedKey = &preSharedKey
 			}
 
+			if wgIfaceMtu >= 0 {
+				ic.WgIfaceMtu = wgIfaceMtu
+			}
+
 			config, err := internal.UpdateOrCreateConfig(ic)
 			if err != nil {
 				return fmt.Errorf("get config file: %v", err)
@@ -85,6 +90,10 @@ var loginCmd = &cobra.Command{
 			SetupKey:      setupKey,
 			PreSharedKey:  preSharedKey,
 			ManagementUrl: managementURL,
+			WgIfaceMtu:    int32(wgIfaceMtu),
+		}
+		if wgIfaceMtu != 0 && wgIfaceMtu != iface.DefaultMTU {
+			cmd.Printf("Logging in with custom MTU value of %d bytes.\n", wgIfaceMtu)
 		}
 
 		var loginErr error
