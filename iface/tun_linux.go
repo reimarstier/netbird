@@ -71,7 +71,7 @@ func (c *tunDevice) createWithKernel() error {
 	}
 
 	// discover current wireguard interface MTU
-	currentLinkMtu, err2 := c.readNetlinkInterfaceMtu(err)
+	currentLinkMtu, err2 := c.readNetlinkInterfaceMtu()
 	if err2 != nil {
 		return err2
 	}
@@ -97,7 +97,7 @@ func (c *tunDevice) createWithKernel() error {
 	return nil
 }
 
-func (c *tunDevice) readNetlinkInterfaceMtu(err error) (int, error) {
+func (c *tunDevice) readNetlinkInterfaceMtu() (int, error) {
 	tunDevice, err := netlink.LinkByName(c.name)
 	if err != nil {
 		return 0, err
@@ -163,8 +163,4 @@ func (l *wgLink) Type() string {
 // Close deletes the link interface
 func (l *wgLink) Close() error {
 	return netlink.LinkDel(l)
-}
-
-func (l *wgLink) setMTU(mtu int) error {
-	return netlink.LinkSetMTU(l, mtu)
 }
