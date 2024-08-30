@@ -60,6 +60,7 @@ type ConfigInput struct {
 	DNSRouteInterval    *time.Duration
 	ClientCertPath      string
 	ClientCertKeyPath   string
+	WgIfaceMtu          int
 }
 
 // Config Configuration type
@@ -70,6 +71,7 @@ type Config struct {
 	ManagementURL        *url.URL
 	AdminURL             *url.URL
 	WgIface              string
+	WgIfaceMtu           int
 	WgPort               int
 	NetworkMonitor       *bool
 	IFaceBlackList       []string
@@ -189,6 +191,11 @@ func createNewConfig(input ConfigInput) (*Config, error) {
 	if _, err := config.apply(input); err != nil {
 		return nil, err
 	}
+	if input.WgIfaceMtu == 0 {
+		config.WgIfaceMtu = iface.DefaultMTU
+	} else {
+		config.WgIfaceMtu = input.WgIfaceMtu
+	}
 
 	return config, nil
 }
@@ -281,6 +288,17 @@ func (config *Config) apply(input ConfigInput) (updated bool, err error) {
 	} else if config.WgPort == 0 {
 		config.WgPort = iface.DefaultWgPort
 		log.Infof("using default Wireguard port %d", config.WgPort)
+		updated = true
+	}
+
+	if input.WgIfaceMtu != 0 && config.WgIfaceMtu != input.WgIfaceMtu {
+		log.Infof("new MTU provided, updated to %d (old value %d)", input.WgIfaceMtu, config.WgIfaceMtu)
+		config.WgIfaceMtu = input.WgIfaceMtu
+		updated = true
+	}
+	if config.WgIfaceMtu <= 0 {
+		log.Infof("invalid MTU provided, updated to %d (old value %d)", iface.DefaultMTU, config.WgIfaceMtu)
+		config.WgIfaceMtu = iface.DefaultMTU
 		updated = true
 	}
 

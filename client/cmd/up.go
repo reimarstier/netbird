@@ -219,6 +219,7 @@ func runInDaemonMode(ctx context.Context, cmd *cobra.Command) error {
 		IsLinuxDesktopClient: isLinuxRunningDesktop(),
 		Hostname:             hostName,
 		ExtraIFaceBlacklist:  extraIFaceBlackList,
+		WgIfaceMtu:           int32(wgIfaceMtu),
 	}
 
 	if rootCmd.PersistentFlags().Changed(preSharedKeyFlag) {

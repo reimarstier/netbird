@@ -94,6 +94,8 @@ message LoginRequest {
   optional bool networkMonitor = 18;
 
   optional google.protobuf.Duration dnsRouteInterval = 19;
+
+  int32 wgIfaceMtu = 20;
 }
 
 message LoginResponse {

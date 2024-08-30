@@ -61,6 +61,7 @@ var ErrResetConnection = fmt.Errorf("reset connection")
 type EngineConfig struct {
 	WgPort      int
 	WgIfaceName string
+	WgIfaceMtu  int
 
 	// WgAddr is a Wireguard local address (Netbird Network IP)
 	WgAddr string
@@ -297,6 +298,7 @@ func (e *Engine) Start() error {
 	}
 	e.ctx, e.cancel = context.WithCancel(e.clientCtx)
 
+	// TODO: wgIFaceMtu := e.config.WgIfaceMtu
 	wgIface, err := e.newWgIface()
 	if err != nil {
 		log.Errorf("failed creating wireguard interface instance %s: [%s]", e.config.WgIfaceName, err)

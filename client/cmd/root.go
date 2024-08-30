@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/netbirdio/netbird/iface"
 	"io"
 	"io/fs"
 	"os"
@@ -57,6 +58,7 @@ var (
 	adminURL                string
 	setupKey                string
 	setupKeyPath            string
+	wgIfaceMtu              int
 	hostName                string
 	preSharedKey            string
 	natExternalIPs          []string
@@ -129,6 +131,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", "info", "sets Netbird log level")
 	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", defaultLogFile, "sets Netbird log path. If console is specified the log will be output to stdout. If syslog is specified the log will be sent to syslog daemon.")
 	rootCmd.PersistentFlags().StringVarP(&setupKey, "setup-key", "k", "", "Setup key obtained from the Management Service Dashboard (used to register peer)")
+	rootCmd.PersistentFlags().IntVar(&wgIfaceMtu, "mtu", 0, fmt.Sprintf("Set MTU for the Wireguard interface (default: %d)", iface.DefaultMTU))
 	rootCmd.PersistentFlags().StringVar(&setupKeyPath, "setup-key-file", "", "The path to a setup key obtained from the Management Service Dashboard (used to register peer) This is ignored if the setup-key flag is provided.")
 	rootCmd.MarkFlagsMutuallyExclusive("setup-key", "setup-key-file")
 	rootCmd.PersistentFlags().StringVar(&preSharedKey, preSharedKeyFlag, "", "Sets Wireguard PreSharedKey property. If set, then only peers that have the same key can communicate.")
