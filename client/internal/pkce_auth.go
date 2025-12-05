@@ -49,7 +49,7 @@ type PKCEAuthProviderConfig struct {
 }
 
 // GetPKCEAuthorizationFlowInfo initialize a PKCEAuthorizationFlow instance and return with it
-func GetPKCEAuthorizationFlowInfo(ctx context.Context, privateKey string, mgmURL *url.URL, clientCert *tls.Certificate) (PKCEAuthorizationFlow, error) {
+func GetPKCEAuthorizationFlowInfo(ctx context.Context, privateKey string, mgmURL *url.URL, clientCert *tls.Certificate, mgmtClientCert *tls.Certificate) (PKCEAuthorizationFlow, error) {
 	// validate our peer's Wireguard PRIVATE key
 	myPrivateKey, err := wgtypes.ParseKey(privateKey)
 	if err != nil {
@@ -63,7 +63,7 @@ func GetPKCEAuthorizationFlowInfo(ctx context.Context, privateKey string, mgmURL
 	}
 
 	log.Debugf("connecting to Management Service %s", mgmURL.String())
-	mgmClient, err := mgm.NewClient(ctx, mgmURL.Host, myPrivateKey, mgmTLSEnabled)
+	mgmClient, err := mgm.NewClient(ctx, mgmURL.Host, myPrivateKey, mgmTLSEnabled, mgmtClientCert)
 	if err != nil {
 		log.Errorf("failed connecting to Management Service %s %v", mgmURL.String(), err)
 		return PKCEAuthorizationFlow{}, err
