@@ -68,8 +68,12 @@ type ConfigInput struct {
 	DisableAutoConnect            *bool
 	ExtraIFaceBlackList           []string
 	DNSRouteInterval              *time.Duration
-	ClientCertPath                string
-	ClientCertKeyPath             string
+	// these client certificates are use for OAuth PKCE Authorization Flow
+	ClientCertPath    string
+	ClientCertKeyPath string
+	// mTLS client certificates for connection to management/signal/relay backend
+	MgmtClientCertPath string
+	MgmtClientKeyPath  string
 
 	DisableClientRoutes *bool
 	DisableServerRoutes *bool
@@ -155,6 +159,11 @@ type Config struct {
 	ClientCertKeyPath string
 
 	ClientCertKeyPair *tls.Certificate `json:"-"`
+
+	// mTLS for backend communication
+	MgmtClientCertPath    string
+	MgmtClientKeyPath     string
+	MgmtClientCertKeyPair *tls.Certificate `json:"-"`
 
 	LazyConnectionEnabled bool
 
@@ -561,6 +570,26 @@ func (config *Config) apply(input ConfigInput) (updated bool, err error) {
 		}
 	}
 
+	if input.MgmtClientKeyPath != "" {
+		config.MgmtClientKeyPath = input.MgmtClientKeyPath
+		updated = true
+	}
+
+	if input.MgmtClientCertPath != "" {
+		config.MgmtClientCertPath = input.MgmtClientCertPath
+		updated = true
+	}
+
+	if config.MgmtClientCertPath != "" && config.MgmtClientKeyPath != "" {
+		cert, err := tls.LoadX509KeyPair(config.MgmtClientCertPath, config.MgmtClientKeyPath)
+		if err != nil {
+			log.Error("Failed to load mTLS cert/key pair for management: ", err)
+		} else {
+			config.MgmtClientCertKeyPair = &cert
+			log.Info("Loaded client mTLS cert/key pair for management.")
+		}
+	}
+
 	if input.DNSLabels != nil && !slices.Equal(config.DNSLabels, input.DNSLabels) {
 		log.Infof("updating DNS labels [ %s ] (old value: [ %s ])",
 			input.DNSLabels.SafeString(),
@@ -739,7 +768,7 @@ func UpdateOldManagementURL(ctx context.Context, config *Config, configPath stri
 		return config, err
 	}
 
-	client, err := mgm.NewClient(ctx, newURL.Host, key, mgmTlsEnabled)
+	client, err := mgm.NewClient(ctx, newURL.Host, key, mgmTlsEnabled, config.MgmtClientCertKeyPair)
 	if err != nil {
 		log.Infof("couldn't switch to the new Management %s", newURL.String())
 		return config, err

@@ -76,6 +76,8 @@ func (a *Auth) SaveConfigIfSSOSupported(listener SSOListener) {
 }
 
 func (a *Auth) saveConfigIfSSOSupported() (bool, error) {
+	// TODO:
+	// 		mgmtClientCert := a.config.MgmtClientCertKeyPair
 	authClient, err := auth.NewAuth(a.ctx, a.config.PrivateKey, a.config.ManagementURL, a.config)
 	if err != nil {
 		return false, fmt.Errorf("failed to create auth client: %v", err)
